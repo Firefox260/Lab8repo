@@ -10,7 +10,7 @@ void *Alloc(size_t sz)
 	extraMemoryAllocated += sz;
 	size_t* ret = malloc(sizeof(size_t) + sz);
 	*ret = sz;
-	printf("Extra memory allocated, size: %ld\n", sz);
+	printf("Extra memory allocated, size: %u\n", sz);
 	return &ret[1];
 }
 
@@ -18,7 +18,7 @@ void DeAlloc(void* ptr)
 {
 	size_t* pSz = (size_t*)ptr - 1;
 	extraMemoryAllocated -= *pSz;
-	printf("Extra memory deallocated, size: %ld\n", *pSz);
+	printf("Extra memory deallocated, size: %u\n", *pSz);
 	free((size_t*)ptr - 1);
 }
 
@@ -29,9 +29,73 @@ size_t Size(void* ptr)
 
 // implement merge sort
 // extraMemoryAllocated counts bytes of extra memory allocated
-void mergeSort(int pData[], int l, int r)
+	void mergeSort(int pData[], int l, int r)
 {
+    if (l < r)
+    {
+        // Find the middle point to divide the array into two halves
+        int m = l + (r - l) / 2;
+
+        // Call mergeSort for the first half
+        mergeSort(pData, l, m);
+
+        // Call mergeSort for the second half
+        mergeSort(pData, m + 1, r);
+
+        // Merge the two halves sorted in step 2 and 3
+        // Calculate the sizes of the two subarrays to be merged
+        int n1 = m - l + 1;
+        int n2 = r - m;
+
+        // Allocate memory for the temporary arrays
+        int *L = (int *)Alloc(n1 * sizeof(int));
+        int *R = (int *)Alloc(n2 * sizeof(int));
+
+        // Copy data to temp arrays L[] and R[]
+        memcpy(L, &pData[l], n1 * sizeof(int));
+        memcpy(R, &pData[m + 1], n2 * sizeof(int));
+
+        // Merge the temp arrays back into pData[l..r]
+        int i = 0; // Initial index of first subarray
+        int j = 0; // Initial index of second subarray
+        int k = l; // Initial index of merged subarray
+        while (i < n1 && j < n2)
+        {
+            if (L[i] <= R[j])
+            {
+                pData[k] = L[i];
+                i++;
+            }
+            else
+            {
+                pData[k] = R[j];
+                j++;
+            }
+            k++;
+        }
+
+        // Copy the remaining elements of L[], if any
+        while (i < n1)
+        {
+            pData[k] = L[i];
+            i++;
+            k++;
+        }
+
+        // Copy the remaining elements of R[], if any
+        while (j < n2)
+        {
+            pData[k] = R[j];
+            j++;
+            k++;
+        }
+
+        // Deallocate the memory used for the temporary arrays
+        DeAlloc(L);
+        DeAlloc(R);
+    }
 }
+
 
 // parses input file to an integer array
 int parseData(char *inputFileName, int **ppData)
@@ -81,6 +145,16 @@ void printArray(int pData[], int dataSz)
 	}
 	printf("\n\n");
 }
+
+
+
+
+
+
+
+
+
+
 
 int main(void)
 {
